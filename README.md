@@ -64,3 +64,7 @@ Returns the processed image as an ANSI string that can be used elsewhere in your
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project falls under the MIT license available [here](./LICENSE)
