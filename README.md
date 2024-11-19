@@ -2,6 +2,8 @@
 
 Ansify is a Go package that converts PNG and JPEG images into ANSI terminal art. It automatically resizes images to fit your terminal width while maintaining aspect ratio, and renders them using colored block characters for a visually appealing result.
 
+I mostly made this as I needed something exactly like it in order to properly complete a [TUI game](https://github.com/ZachLTech/eXit) I'm working on :)
+
 ## Features
 
 - Supports PNG and JPEG image formats
