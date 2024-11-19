@@ -3,27 +3,44 @@ package ansify
 import (
 	"fmt"
 	"image"
+	"image/jpeg"
 	"image/png"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/image/draw"
 	"golang.org/x/term"
 )
 
-func LoadImage(image string) image.Image {
+func loadImage(image string) image.Image {
 	file, err := os.Open(image)
 	if err != nil {
 		fmt.Printf("error while opening file %v\n", err)
 	}
 	defer file.Close()
-	img, err := png.Decode(file)
-	if err != nil {
-		fmt.Printf("error while decoding image %v\n", err)
+
+	imgExt := filepath.Ext(image)
+
+	if imgExt == ".jpeg" || imgExt == ".jpg" {
+		img, err := jpeg.Decode(file)
+		if err != nil {
+			fmt.Printf("error while decoding image %v\n", err)
+		}
+
+		return img
+	} else if imgExt == ".png" {
+		img, err := png.Decode(file)
+		if err != nil {
+			fmt.Printf("error while decoding image %v\n", err)
+		}
+
+		return img
+	} else {
+		panic("There was an error and the file provided was likely not the correct format. (Only PNG or JPG)\n")
 	}
-	return img
 }
 
-func ResizeImage(img image.Image, width int) image.Image {
+func resizeImage(img image.Image, width int) image.Image {
 	bounds := img.Bounds()
 	height := (bounds.Dy() * width) / bounds.Dx()
 	newImage := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -31,11 +48,11 @@ func ResizeImage(img image.Image, width int) image.Image {
 	return newImage
 }
 
-func RGBToANSI(r, g, b uint8) string {
+func rgbToANSI(r, g, b uint8) string {
 	return fmt.Sprintf("\x1b[38;2;%d;%d;%dm", r, g, b)
 }
 
-func GetAverageColor(img image.Image, x, y int) (uint8, uint8, uint8) {
+func getAverageColor(img image.Image, x, y int) (uint8, uint8, uint8) {
 	c1 := img.At(x, y)
 	c2 := img.At(x, y+1)
 
@@ -45,7 +62,7 @@ func GetAverageColor(img image.Image, x, y int) (uint8, uint8, uint8) {
 	return uint8((r1 + r2) / 512), uint8((g1 + g2) / 512), uint8((b1 + b2) / 512)
 }
 
-func MapToBlocks(img image.Image) []string {
+func mapToBlocks(img image.Image) []string {
 	bounds := img.Bounds()
 	height, width := bounds.Max.Y, bounds.Max.X
 	result := make([]string, height/2)
@@ -56,8 +73,8 @@ func MapToBlocks(img image.Image) []string {
 	for y := bounds.Min.Y; y < height-1; y += 2 {
 		line := ""
 		for x := bounds.Min.X; x < width; x++ {
-			r, g, b := GetAverageColor(img, x, y)
-			colorCode := RGBToANSI(r, g, b)
+			r, g, b := getAverageColor(img, x, y)
+			colorCode := rgbToANSI(r, g, b)
 			line += colorCode + fullBlock
 		}
 		line += resetColor
@@ -67,17 +84,17 @@ func MapToBlocks(img image.Image) []string {
 	return result
 }
 
-func getAnsify(imageInput string) string {
+func GetAnsify(imageInput string) string {
 	var renderedImage string
 	width, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		fmt.Printf("error while getting terminal size %v\n", err)
 	}
 
-	image := LoadImage(imageInput)
-	image = ResizeImage(image, width)
+	image := loadImage(imageInput)
+	image = resizeImage(image, width)
 
-	blockLines := MapToBlocks(image)
+	blockLines := mapToBlocks(image)
 	for _, line := range blockLines {
 		renderedImage += fmt.Sprintf(line)
 	}
@@ -85,16 +102,16 @@ func getAnsify(imageInput string) string {
 	return renderedImage
 }
 
-func printAnsify(imageInput string) {
+func PrintAnsify(imageInput string) {
 	width, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		fmt.Printf("error while getting terminal size %v\n", err)
 	}
 
-	image := LoadImage(imageInput)
-	image = ResizeImage(image, width)
+	image := loadImage(imageInput)
+	image = resizeImage(image, width)
 
-	blockLines := MapToBlocks(image)
+	blockLines := mapToBlocks(image)
 	for _, line := range blockLines {
 		fmt.Println(line)
 	}
