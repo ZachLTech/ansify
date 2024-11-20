@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"golang.org/x/image/draw"
 	"golang.org/x/term"
@@ -85,21 +86,18 @@ func mapToBlocks(img image.Image) []string {
 }
 
 func GetAnsify(imageInput string) string {
-	var renderedImage string
+	var sb strings.Builder
 	width, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		fmt.Printf("error while getting terminal size %v\n", err)
 	}
-
 	image := loadImage(imageInput)
 	image = resizeImage(image, width)
-
 	blockLines := mapToBlocks(image)
 	for _, line := range blockLines {
-		renderedImage += fmt.Sprintf(line)
+		sb.WriteString(line + "\n") // Add explicit newline after each line
 	}
-
-	return renderedImage
+	return sb.String()
 }
 
 func PrintAnsify(imageInput string) {
