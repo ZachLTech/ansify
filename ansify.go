@@ -126,6 +126,35 @@ func GetAnsify(imageInput string) (string, error) {
 	return sb.String(), nil
 }
 
+func GetAnsifyCustomWidth(imageInput string, termWidth int) (string, error) {
+	width, _, err := term.GetSize(int(os.Stdout.Fd()))
+	if err != nil {
+		return "", fmt.Errorf("error getting terminal size: %v", err)
+	}
+
+	image, err := loadImage(imageInput)
+	if err != nil {
+		return "", fmt.Errorf("error loading image: %v", err)
+	}
+
+	resized, err := resizeImage(image, width)
+	if err != nil {
+		return "", fmt.Errorf("error resizing image: %v", err)
+	}
+
+	blockLines, err := mapToBlocks(resized)
+	if err != nil {
+		return "", fmt.Errorf("error mapping blocks: %v", err)
+	}
+
+	var sb strings.Builder
+	for _, line := range blockLines {
+		sb.WriteString(line + "\n")
+	}
+
+	return sb.String(), nil
+}
+
 func PrintAnsify(imageInput string) error {
 	result, err := GetAnsify(imageInput)
 	if err != nil {
