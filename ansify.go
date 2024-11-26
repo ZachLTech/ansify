@@ -98,6 +98,8 @@ func mapToBlocks(img image.Image) ([]string, error) {
 }
 
 func GetAnsify(imageInput string) (string, error) {
+	var width int
+
 	width, _, err := term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		return "", fmt.Errorf("error getting terminal size: %v", err)
@@ -127,10 +129,7 @@ func GetAnsify(imageInput string) (string, error) {
 }
 
 func GetAnsifyCustomWidth(imageInput string, termWidth int) (string, error) {
-	width, _, err := term.GetSize(int(os.Stdout.Fd()))
-	if err != nil {
-		return "", fmt.Errorf("error getting terminal size: %v", err)
-	}
+	width := termWidth
 
 	image, err := loadImage(imageInput)
 	if err != nil {
